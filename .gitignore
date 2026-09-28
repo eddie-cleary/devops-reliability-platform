@@ -1,2 +1,4 @@
 .DS_STORE
 *.db
+monitor/__pycache__/
+monitor/database.py
