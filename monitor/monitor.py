@@ -1,5 +1,6 @@
 import time
 import requests
+from database import initialize_database, save_check
 
 
 def check_endpoint(url):
@@ -46,8 +47,12 @@ def check_endpoint(url):
 
 
 if __name__ == "__main__":
+    initialize_database()
+
     target = "http://127.0.0.1:8000/healthy"
 
     result = check_endpoint(target)
+
+    save_check(result)
 
     print(result)
