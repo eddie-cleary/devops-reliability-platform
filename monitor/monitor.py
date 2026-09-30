@@ -125,7 +125,7 @@ def print_recent_checks(checks):
 
         print(
             f"{timestamp} | "
-            f"{result:<8} | "
+            f"{result:<9} | "
             f"status={status_code} | "
             f"latency={latency_ms} ms"
         )
