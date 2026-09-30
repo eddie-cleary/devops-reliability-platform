@@ -2,6 +2,7 @@ import time
 import requests
 from database import initialize_database, save_check, get_recent_checks
 import argparse
+from datetime import datetime
 
 def check_endpoint(url, latency_warning, latency_critical, timeout):
     start_time = time.perf_counter()
@@ -106,6 +107,29 @@ def validate_arguments(args):
             "--latency-critical must be greater than --latency-warning"
         )
 
+def print_check_result(result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    print(f"\n[{timestamp}]")
+    print(f"URL:     {result['url']}")
+    print(f"Status:  {result['status_code']}")
+    print(f"Latency: {result['latency_ms']} ms")
+    print(f"Result:  {result['result']}")
+    print(f"Failure: {result.get('failure_reason')}")
+
+def print_recent_checks(checks):
+    print("\nRecent checks:")
+
+    for check in checks:
+        timestamp, url, status_code, latency_ms, result, failure_reason = check
+
+        print(
+            f"{timestamp} | "
+            f"{result:<8} | "
+            f"status={status_code} | "
+            f"latency={latency_ms} ms"
+        )
+
 if __name__ == "__main__":
     initialize_database()
 
@@ -122,11 +146,8 @@ if __name__ == "__main__":
 
         save_check(result)
 
-        print(result)
-
-        print("\nRecent checks:")
-        for check in get_recent_checks(5):
-            print(check)
+        print_check_result(result)
+        print_recent_checks(get_recent_checks(5))
 
         print(f"\nWaiting {args.interval} seconds...\n")
         time.sleep(args.interval)
