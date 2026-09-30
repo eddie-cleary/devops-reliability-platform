@@ -3,6 +3,20 @@ import requests
 from database import initialize_database, save_check, get_recent_checks
 import argparse
 from datetime import datetime
+import logging
+from pathlib import Path
+
+LOG_FILE = Path(__file__).parent / "monitor.log"
+
+def configure_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(message)s",
+        handlers=[
+            logging.FileHandler(LOG_FILE),
+            logging.StreamHandler()
+        ]
+    )
 
 def check_endpoint(url, latency_warning, latency_critical, timeout):
     start_time = time.perf_counter()
@@ -131,6 +145,7 @@ def print_recent_checks(checks):
         )
 
 if __name__ == "__main__":
+    configure_logging()
     initialize_database()
 
     args = parse_arguments()
@@ -145,6 +160,15 @@ if __name__ == "__main__":
         )
 
         save_check(result)
+
+        logging.info(
+            "url=%s status_code=%s latency_ms=%s result=%s failure_reason=%s",
+            result["url"],
+            result["status_code"],
+            result["latency_ms"],
+            result["result"],
+            result.get("failure_reason")
+        )
 
         print_check_result(result)
         print_recent_checks(get_recent_checks(5))
