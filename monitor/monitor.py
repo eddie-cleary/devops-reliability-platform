@@ -91,10 +91,26 @@ def parse_arguments():
 
     return parser.parse_args()
 
+def validate_arguments(args):
+    if args.interval <= 0:
+        raise ValueError("--interval must be greater than 0")
+
+    if args.timeout <= 0:
+        raise ValueError("--timeout must be greater than 0")
+
+    if args.latency_warning < 0:
+        raise ValueError("--latency-warning cannot be negative")
+
+    if args.latency_critical <= args.latency_warning:
+        raise ValueError(
+            "--latency-critical must be greater than --latency-warning"
+        )
+
 if __name__ == "__main__":
     initialize_database()
 
     args = parse_arguments()
+    validate_arguments(args)
 
     while True:
         result = check_endpoint(
