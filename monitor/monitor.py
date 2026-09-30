@@ -1,6 +1,6 @@
 import time
 import requests
-from database import initialize_database, save_check, get_recent_checks
+from .database import initialize_database, save_check, get_recent_checks
 import argparse
 from datetime import datetime
 import logging
