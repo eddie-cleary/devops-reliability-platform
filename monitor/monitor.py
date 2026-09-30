@@ -1,7 +1,6 @@
 import time
 import requests
-from database import initialize_database, save_check
-
+from database import initialize_database, save_check, get_recent_checks
 
 def check_endpoint(url):
     start_time = time.perf_counter()
@@ -54,5 +53,9 @@ if __name__ == "__main__":
     result = check_endpoint(target)
 
     save_check(result)
-
     print(result)
+
+    print("\nRecent checks:")
+
+    for check in get_recent_checks(5):
+        print(check)
