@@ -50,12 +50,15 @@ if __name__ == "__main__":
 
     target = "http://127.0.0.1:8000/healthy"
 
-    result = check_endpoint(target)
+    while True:
+        result = check_endpoint(target)
+        save_check(result)
 
-    save_check(result)
-    print(result)
+        print(result)
 
-    print("\nRecent checks:")
+        print("\nRecent checks:")
+        for check in get_recent_checks(5):
+            print(check)
 
-    for check in get_recent_checks(5):
-        print(check)
+        print("\nWaiting 30 seconds...\n")
+        time.sleep(30)
