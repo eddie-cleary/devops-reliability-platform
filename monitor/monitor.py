@@ -3,11 +3,11 @@ import requests
 from database import initialize_database, save_check, get_recent_checks
 import argparse
 
-def check_endpoint(url):
+def check_endpoint(url, latency_warning, latency_critical, timeout):
     start_time = time.perf_counter()
 
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=timeout)
 
         latency_ms = round(
             (time.perf_counter() - start_time) * 1000,
@@ -15,7 +15,12 @@ def check_endpoint(url):
         )
 
         if 200 <= response.status_code < 300:
-            result = "HEALTHY"
+            if latency_ms >= latency_critical:
+                result = "UNHEALTHY"
+            elif latency_ms >= latency_warning:
+                result = "DEGRADED"
+            else:
+                result = "HEALTHY"
         else:
             result = "UNHEALTHY"
 
@@ -63,6 +68,27 @@ def parse_arguments():
         help="Seconds between checks (default: 30)"
     )
 
+    parser.add_argument(
+        "--latency-warning",
+        type=int,
+        default=1000,
+        help="Warning latency threshold in milliseconds"
+    )
+
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=10,
+        help="HTTP request timeout in seconds (default: 10)"
+    )
+
+    parser.add_argument(
+        "--latency-critical",
+        type=int,
+        default=3000,
+        help="Critical latency threshold in milliseconds"
+    )
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -71,7 +97,13 @@ if __name__ == "__main__":
     args = parse_arguments()
 
     while True:
-        result = check_endpoint(args.url)
+        result = check_endpoint(
+            args.url,
+            args.latency_warning,
+            args.latency_critical,
+            args.timeout
+        )
+
         save_check(result)
 
         print(result)
