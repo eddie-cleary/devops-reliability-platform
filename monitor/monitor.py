@@ -1,6 +1,7 @@
 import time
 import requests
 from database import initialize_database, save_check, get_recent_checks
+import argparse
 
 def check_endpoint(url):
     start_time = time.perf_counter()
@@ -44,14 +45,33 @@ def check_endpoint(url):
             "failure_reason": str(error)
         }
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Monitor an HTTP endpoint and record health checks"
+    )
+
+    parser.add_argument(
+        "--url",
+        required=True,
+        help="URL to monitor"
+    )
+
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=30,
+        help="Seconds between checks (default: 30)"
+    )
+
+    return parser.parse_args()
 
 if __name__ == "__main__":
     initialize_database()
 
-    target = "http://127.0.0.1:8000/healthy"
+    args = parse_arguments()
 
     while True:
-        result = check_endpoint(target)
+        result = check_endpoint(args.url)
         save_check(result)
 
         print(result)
@@ -60,5 +80,5 @@ if __name__ == "__main__":
         for check in get_recent_checks(5):
             print(check)
 
-        print("\nWaiting 30 seconds...\n")
-        time.sleep(30)
+        print(f"\nWaiting {args.interval} seconds...\n")
+        time.sleep(args.interval)
