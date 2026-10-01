@@ -1,0 +1,25 @@
+services:
+  demo-service:
+    build:
+      context: .
+      dockerfile: service/Dockerfile
+    ports:
+      - "8000:8000"
+
+  monitor:
+    build:
+      context: .
+      dockerfile: monitor/Dockerfile
+    depends_on:
+      - demo-service
+    command:
+      - --url
+      - http://demo-service:8000/healthy
+      - --interval
+      - "10"
+      - --latency-warning
+      - "1000"
+      - --latency-critical
+      - "3000"
+      - --timeout
+      - "5"
