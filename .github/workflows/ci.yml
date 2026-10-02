@@ -29,3 +29,9 @@ jobs:
       - name: Run test suite
         run: |
           python -m pytest -v tests
+
+      - name: Build demo service image
+        run: docker build -f service/Dockerfile -t reliability-demo-service .
+
+      - name: Build monitor image
+        run: docker build -f monitor/Dockerfile -t reliability-monitor .
