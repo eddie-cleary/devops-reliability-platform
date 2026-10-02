@@ -5,3 +5,7 @@ __pycache__/
 *.db
 *.log
 .pytest_cache/
+/policies
+.terraform/
+*.tfstate
+*.tfstate.*
