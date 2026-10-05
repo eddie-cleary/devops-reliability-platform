@@ -39,32 +39,6 @@ jobs:
 
       - name: Build monitor image
         run: docker build -f monitor/Dockerfile -t reliability-monitor .
-
-      - name: Debug GitHub OIDC claims
-        if: github.ref == 'refs/heads/main'
-        shell: bash
-        run: |
-          TOKEN_RESPONSE=$(curl -sSf \
-            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")
-
-          TOKEN=$(echo "$TOKEN_RESPONSE" | python -c \
-            'import json,sys; print(json.load(sys.stdin)["value"])')
-
-          TOKEN="$TOKEN" python - <<'PY'
-          import os
-          import json
-          import base64
-
-          token = os.environ["TOKEN"]
-          payload = token.split(".")[1]
-          payload += "=" * (-len(payload) % 4)
-
-          claims = json.loads(base64.urlsafe_b64decode(payload))
-
-          for key in ["iss", "aud", "sub", "repository", "ref", "event_name"]:
-              print(f"{key}: {claims.get(key)}")
-          PY
         
       - name: Configure AWS credentials
         if: github.ref == 'refs/heads/main'
