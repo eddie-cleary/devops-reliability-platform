@@ -9,3 +9,13 @@ variable "aws_profile" {
   type        = string
   default     = "devops-reliability"
 }
+
+variable "service_image_tag" {
+  description = "ECR image tag for the reliability service"
+  type        = string
+}
+
+variable "monitor_image_tag" {
+  description = "ECR image tag for the reliability monitor"
+  type        = string
+}
