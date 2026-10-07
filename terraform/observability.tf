@@ -18,6 +18,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
   namespace           = "ECS/ContainerInsights"
   period              = 60
   statistic           = "Minimum"
+  alarm_actions       = [aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [aws_sns_topic.alarm_notifications.arn]
 
   dimensions = {
     ClusterName = aws_ecs_cluster.main.name
@@ -31,4 +33,47 @@ resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
     Project     = "devops-reliability"
     Environment = "dev"
   }
+}
+
+resource "aws_sns_topic" "alarm_notifications" {
+  name = "devops-reliability-alarm-notifications"
+
+  tags = {
+    Project     = "devops-reliability"
+    Environment = "dev"
+  }
+}
+
+resource "aws_sns_topic_subscription" "alarm_email" {
+  topic_arn = aws_sns_topic.alarm_notifications.arn
+  protocol  = "email"
+  endpoint  = var.alarm_notification_email
+}
+
+resource "aws_sns_topic_policy" "alarm_notifications" {
+  arn = aws_sns_topic.alarm_notifications.arn
+
+  # Allow only this alarm, in this account, to publish notifications.
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudWatchAlarmPublish"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudwatch.amazonaws.com"
+        }
+        Action   = "sns:Publish"
+        Resource = aws_sns_topic.alarm_notifications.arn
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" = aws_cloudwatch_metric_alarm.ecs_running_task_count.arn
+          }
+          StringEquals = {
+            "aws:SourceAccount" = aws_sns_topic.alarm_notifications.owner
+          }
+        }
+      }
+    ]
+  })
 }

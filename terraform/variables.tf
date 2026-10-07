@@ -19,3 +19,9 @@ variable "monitor_image_tag" {
   description = "ECR image tag for the reliability monitor"
   type        = string
 }
+
+variable "alarm_notification_email" {
+  description = "Email address for outage and recovery notifications"
+  type        = string
+  sensitive   = true
+}
