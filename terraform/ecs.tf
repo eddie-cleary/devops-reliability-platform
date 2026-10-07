@@ -1,56 +1,3 @@
-resource "aws_security_group" "ecs_host" {
-  name        = "devops-reliability-ecs-host"
-  description = "Security group for ECS EC2 hosts"
-  vpc_id      = aws_vpc.main.id
-
-  egress {
-    description = "Allow outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "devops-reliability-ecs-host"
-    Project     = "devops-reliability"
-    Environment = "dev"
-  }
-}
-
-data "aws_iam_policy_document" "ecs_instance_assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "ecs_instance" {
-  name               = "DevOpsReliabilityECSInstanceRole"
-  assume_role_policy = data.aws_iam_policy_document.ecs_instance_assume_role.json
-
-  tags = {
-    Project     = "devops-reliability"
-    Environment = "dev"
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_instance" {
-  role       = aws_iam_role.ecs_instance.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-}
-
-resource "aws_iam_instance_profile" "ecs_instance" {
-  name = "DevOpsReliabilityECSInstanceProfile"
-  role = aws_iam_role.ecs_instance.name
-}
-
 resource "aws_ecs_cluster" "main" {
   name = "devops-reliability-cluster"
 
@@ -58,10 +5,6 @@ resource "aws_ecs_cluster" "main" {
     Project     = "devops-reliability"
     Environment = "dev"
   }
-}
-
-data "aws_ssm_parameter" "ecs_optimized_ami" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id"
 }
 
 resource "aws_launch_template" "ecs" {
@@ -100,6 +43,13 @@ resource "aws_autoscaling_group" "ecs" {
     id      = aws_launch_template.ecs.id
     version = "$Latest"
   }
+
+  # Preserve the management tag ECS adds for its capacity provider.
+  tag {
+    key                 = "AmazonECSManaged"
+    value               = ""
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_ecs_capacity_provider" "ecs" {
@@ -125,14 +75,6 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
     capacity_provider = aws_ecs_capacity_provider.ecs.name
     weight            = 1
   }
-}
-
-data "aws_ecr_repository" "service" {
-  name = "reliability-service"
-}
-
-data "aws_ecr_repository" "monitor" {
-  name = "reliability-monitor"
 }
 
 resource "aws_ecs_task_definition" "app" {
@@ -231,43 +173,5 @@ resource "aws_ecs_service" "app" {
     security_groups = [
       aws_security_group.ecs_task.id
     ]
-  }
-}
-
-resource "aws_security_group" "ecs_task" {
-  name        = "devops-reliability-ecs-task"
-  description = "Security group for ECS application tasks"
-  vpc_id      = aws_vpc.main.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "devops-reliability-ecs-task"
-    Project     = "devops-reliability"
-    Environment = "dev"
-  }
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ecs_task_http" {
-  security_group_id = aws_security_group.ecs_task.id
-
-  cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 8000
-  to_port     = 8000
-  ip_protocol = "tcp"
-}
-
-resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/devops-reliability"
-  retention_in_days = 7
-
-  tags = {
-    Project     = "devops-reliability"
-    Environment = "dev"
   }
 }

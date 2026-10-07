@@ -1,3 +1,5 @@
+## bootstrap/main.tf is intended to establish the Elastic Container Repositories and backend infrastructure a runtime teardown does not remove them.
+
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "devops-reliability-tfstate-670253275650"
 }
