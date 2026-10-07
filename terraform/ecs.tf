@@ -1,6 +1,12 @@
 resource "aws_ecs_cluster" "main" {
   name = "devops-reliability-cluster"
 
+  # Publish the service-level RunningTaskCount metric used by the availability alarm.
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
   tags = {
     Project     = "devops-reliability"
     Environment = "dev"
