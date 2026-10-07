@@ -10,10 +10,6 @@ resource "aws_vpc" "main" {
   }
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.20.10.0/24"
@@ -124,22 +120,4 @@ resource "aws_route_table_association" "private_a" {
 resource "aws_route_table_association" "private_b" {
   subnet_id      = aws_subnet.private_b.id
   route_table_id = aws_route_table.private.id
-}
-
-output "vpc_id" {
-  value = aws_vpc.main.id
-}
-
-output "public_subnet_ids" {
-  value = [
-    aws_subnet.public_a.id,
-    aws_subnet.public_b.id
-  ]
-}
-
-output "private_subnet_ids" {
-  value = [
-    aws_subnet.private_a.id,
-    aws_subnet.private_b.id
-  ]
 }
