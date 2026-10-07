@@ -127,6 +127,14 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
   }
 }
 
+data "aws_ecr_repository" "service" {
+  name = "reliability-service"
+}
+
+data "aws_ecr_repository" "monitor" {
+  name = "reliability-monitor"
+}
+
 resource "aws_ecs_task_definition" "app" {
   family                   = "reliability-platform"
   network_mode             = "awsvpc"
@@ -137,7 +145,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = "reliability-service"
-      image     = "${aws_ecr_repository.service.repository_url}:${var.service_image_tag}"
+      image     = "${data.aws_ecr_repository.service.repository_url}:${var.service_image_tag}"
       essential = true
 
       portMappings = [
@@ -159,10 +167,20 @@ resource "aws_ecs_task_definition" "app" {
         retries     = 3
         startPeriod = 10
       }
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "service"
+        }
+      }
     },
     {
       name      = "reliability-monitor"
-      image     = "${aws_ecr_repository.monitor.repository_url}:${var.monitor_image_tag}"
+      image     = "${data.aws_ecr_repository.monitor.repository_url}:${var.monitor_image_tag}"
       essential = true
       command = [
         "--url",
@@ -176,6 +194,16 @@ resource "aws_ecs_task_definition" "app" {
         "--timeout",
         "5"
       ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "monitor"
+        }
+      }
     }
   ])
 }
@@ -232,4 +260,14 @@ resource "aws_vpc_security_group_ingress_rule" "ecs_task_http" {
   from_port   = 8000
   to_port     = 8000
   ip_protocol = "tcp"
+}
+
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/devops-reliability"
+  retention_in_days = 7
+
+  tags = {
+    Project     = "devops-reliability"
+    Environment = "dev"
+  }
 }
