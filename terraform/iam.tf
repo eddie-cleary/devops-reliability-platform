@@ -29,4 +29,9 @@ resource "aws_iam_role_policy_attachment" "ecs_instance" {
 resource "aws_iam_instance_profile" "ecs_instance" {
   name = "DevOpsReliabilityECSInstanceProfile"
   role = aws_iam_role.ecs_instance.name
+
+  # Keep ECS permissions attached while the EC2 instance profile exists.
+  depends_on = [
+    aws_iam_role_policy_attachment.ecs_instance
+  ]
 }

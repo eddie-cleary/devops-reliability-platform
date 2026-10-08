@@ -180,4 +180,13 @@ resource "aws_ecs_service" "app" {
       aws_security_group.ecs_task.id
     ]
   }
+
+  # Keep public networking available while ECS drains tasks during teardown.
+  depends_on = [
+    aws_route.public_internet,
+    aws_route_table_association.public_a,
+    aws_route_table_association.public_b,
+    aws_iam_role_policy_attachment.ecs_instance,
+    aws_ecs_cluster_capacity_providers.main
+  ]
 }
