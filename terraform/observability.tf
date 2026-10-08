@@ -1,13 +1,3 @@
-resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/devops-reliability"
-  retention_in_days = 7
-
-  tags = {
-    Project     = "devops-reliability"
-    Environment = "dev"
-  }
-}
-
 resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
   alarm_name          = "devops-reliability-ecs-running-task-count"
   alarm_description   = "Alarm when the ECS service has fewer than one running task or stops reporting metrics"
@@ -18,8 +8,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
   namespace           = "ECS/ContainerInsights"
   period              = 60
   statistic           = "Minimum"
-  alarm_actions       = [aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [aws_sns_topic.alarm_notifications.arn]
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 
   dimensions = {
     ClusterName = aws_ecs_cluster.main.name
@@ -35,23 +25,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
   }
 }
 
-resource "aws_sns_topic" "alarm_notifications" {
-  name = "devops-reliability-alarm-notifications"
-
-  tags = {
-    Project     = "devops-reliability"
-    Environment = "dev"
-  }
-}
-
-resource "aws_sns_topic_subscription" "alarm_email" {
-  topic_arn = aws_sns_topic.alarm_notifications.arn
-  protocol  = "email"
-  endpoint  = var.alarm_notification_email
-}
-
 resource "aws_sns_topic_policy" "alarm_notifications" {
-  arn = aws_sns_topic.alarm_notifications.arn
+  arn = data.aws_sns_topic.alarm_notifications.arn
 
   # Allow only this alarm, in this account, to publish notifications.
   policy = jsonencode({
@@ -64,13 +39,13 @@ resource "aws_sns_topic_policy" "alarm_notifications" {
           Service = "cloudwatch.amazonaws.com"
         }
         Action   = "sns:Publish"
-        Resource = aws_sns_topic.alarm_notifications.arn
+        Resource = data.aws_sns_topic.alarm_notifications.arn
         Condition = {
           ArnEquals = {
             "aws:SourceArn" = aws_cloudwatch_metric_alarm.ecs_running_task_count.arn
           }
           StringEquals = {
-            "aws:SourceAccount" = aws_sns_topic.alarm_notifications.owner
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
           }
         }
       }
