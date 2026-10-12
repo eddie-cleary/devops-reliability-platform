@@ -77,6 +77,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     environment: dev
+    if: github.ref != 'refs/heads/main'
 
     steps:
       - name: Configure AWS ECS Credentials
