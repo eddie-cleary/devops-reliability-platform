@@ -40,11 +40,11 @@ jobs:
       - name: Build monitor image
         run: docker build -f monitor/Dockerfile -t reliability-monitor .
         
-      - name: Configure AWS credentials
+      - name: Configure AWS ECR credentials
         if: github.ref == 'refs/heads/main'
         uses: aws-actions/configure-aws-credentials@v5
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_ECR_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
       
       - name: Login to Amazon ECR
@@ -69,3 +69,10 @@ jobs:
         run: |
           docker build -f monitor/Dockerfile -t $ECR_REGISTRY/reliability-monitor:$IMAGE_TAG .
           docker push $ECR_REGISTRY/reliability-monitor:$IMAGE_TAG
+      
+      - name: Configure AWS ECS Credentials
+        if: github.ref == 'refs/heads/main'
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
