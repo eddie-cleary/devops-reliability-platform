@@ -106,3 +106,11 @@ jobs:
           task-definition: ${{ steps.render-service.outputs.task-definition }}
           container-name: reliability-monitor
           image: ${{ needs.build-push.outputs.registry }}/reliability-monitor:${{ github.sha }}
+
+      - name: Deploy task definition to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-monitor.outputs.task-definition }}
+          service: reliability-platform
+          cluster: devops-reliability-cluster
+          wait-for-service-stability: true
