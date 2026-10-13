@@ -90,3 +90,19 @@ jobs:
           aws ecs describe-task-definition \
             --task-definition reliability-platform \
             --query taskDefinition > task-definition.json
+      
+      - name: Render service image into task definition
+        id: render-service
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: reliability-service
+          image: ${{ needs.build-push.outputs.registry }}/reliability-service:${{ github.sha }}
+      
+      - name: Render monitor image into task definition
+        id: render-monitor
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-service.outputs.task-definition }}
+          container-name: reliability-monitor
+          image: ${{ needs.build-push.outputs.registry }}/reliability-monitor:${{ github.sha }}
