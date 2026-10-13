@@ -22,7 +22,7 @@ Both run as separate containers in one ECS task on an EC2 instance. The infrastr
 
 ## Tech
 
-- AWS (ECS on EC2, ECR, CloudWatch, SNS)
+- AWS (ECS on EC2, ECR, CloudWatch)
 - Terraform
 - GitHub Actions
 - Docker
