@@ -165,6 +165,11 @@ resource "aws_ecs_service" "app" {
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 200
 
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.ecs.name
     weight            = 1
