@@ -23,3 +23,7 @@ output "private_subnet_ids" {
     aws_subnet.private_b.id
   ]
 }
+
+output "alb_dns_name" {
+  value = aws_lb.alb.dns_name
+}
