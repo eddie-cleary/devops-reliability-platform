@@ -11,3 +11,23 @@ resource "aws_lb" "alb" {
     Environment = "dev"
   }
 }
+
+resource "aws_lb_target_group" "alb_tg" {
+  name        = "devops-reliability-alb-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    path              = "/healthy"
+    interval          = 15
+    healthy_threshold = 2
+  }
+
+  tags = {
+    Name        = "devops-reliability-alb-tg"
+    Project     = "devops-reliability"
+    Environment = "dev"
+  }
+}
