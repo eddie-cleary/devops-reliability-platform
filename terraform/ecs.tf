@@ -164,6 +164,7 @@ resource "aws_ecs_service" "app" {
 
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 200
+  health_check_grace_period_seconds  = 30
 
   deployment_circuit_breaker {
     enable   = true
@@ -186,12 +187,19 @@ resource "aws_ecs_service" "app" {
     ]
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.alb_tg.arn
+    container_name   = "reliability-service"
+    container_port   = 8000
+  }
+
   # Keep public networking available while ECS drains tasks during teardown.
   depends_on = [
     aws_route.public_internet,
     aws_route_table_association.public_a,
     aws_route_table_association.public_b,
     aws_iam_role_policy_attachment.ecs_instance,
-    aws_ecs_cluster_capacity_providers.main
+    aws_ecs_cluster_capacity_providers.main,
+    aws_lb_listener.alb_listener
   ]
 }
