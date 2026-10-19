@@ -138,4 +138,11 @@ jobs:
           echo "alb-dns-name=$ALB_DNS_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Smoke Test
-        run: echo "PLACEHOLDER"
+        run: |
+          BODY=$(curl -sS --fail --max-time 10 --retry 5 --retry-delay 10 --retry-all-errors http://${{ steps.alb-dns-name.outputs.alb-dns-name }}/healthy)
+          if [[ "$BODY" == '{"status":"ok"}' ]]; then
+            exit 0
+          else 
+            echo $BODY
+            exit 1
+          fi
