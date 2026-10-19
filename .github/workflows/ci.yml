@@ -128,5 +128,14 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
       
+      - name: Get ALB DNS name
+        id: alb-dns-name
+        run: |
+          ALB_DNS_NAME=$(aws elbv2 describe-load-balancers \
+            --names devops-reliability-alb \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text)
+          echo "alb-dns-name=$ALB_DNS_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Smoke Test
         run: echo "PLACEHOLDER"
