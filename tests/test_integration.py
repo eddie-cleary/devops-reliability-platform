@@ -17,7 +17,7 @@ def test_demo_service_healthy_endpoint():
     response = client.get("/healthy")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    assert response.json() == {"status": "degraded"}
 
 
 def test_demo_service_error_endpoint():
