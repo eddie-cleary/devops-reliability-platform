@@ -143,6 +143,6 @@ jobs:
           if [[ "$BODY" == '{"status":"ok"}' ]]; then
             exit 0
           else 
-            echo $BODY
+            echo "$BODY"
             exit 1
           fi
