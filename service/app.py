@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/healthy")
 def healthy():
-    return {"status": "degraded"}
+    return {"status": "ok"}
 
 
 @app.get("/error")
