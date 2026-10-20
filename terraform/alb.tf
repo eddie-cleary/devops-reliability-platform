@@ -13,11 +13,11 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "alb_tg" {
-  name        = "devops-reliability-alb-tg"
-  port        = 8000
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
-  target_type = "ip"
+  name                 = "devops-reliability-alb-tg"
+  port                 = 8000
+  protocol             = "HTTP"
+  vpc_id               = aws_vpc.main.id
+  target_type          = "ip"
   deregistration_delay = 30
 
   health_check {
