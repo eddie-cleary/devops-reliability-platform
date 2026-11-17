@@ -1,10 +1,10 @@
 resource "aws_security_group" "ecs_host" {
-  name        = "devops-reliability-ecs-host"
+  name        = "devops-reliability-ecs-host-sg"
   description = "Security group for ECS EC2 hosts"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name        = "devops-reliability-ecs-host"
+    Name        = "devops-reliability-ecs-host-sg"
     Project     = "devops-reliability"
     Environment = "dev"
   }
@@ -18,12 +18,12 @@ resource "aws_vpc_security_group_egress_rule" "ecs_host_egress" {
 }
 
 resource "aws_security_group" "ecs_task" {
-  name        = "devops-reliability-ecs-task"
+  name        = "devops-reliability-ecs-task-sg"
   description = "Security group for ECS application tasks"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name        = "devops-reliability-ecs-task"
+    Name        = "devops-reliability-ecs-task-sg"
     Project     = "devops-reliability"
     Environment = "dev"
   }
@@ -46,12 +46,12 @@ resource "aws_vpc_security_group_ingress_rule" "ecs_task_ingress" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "devops-reliability-alb"
+  name        = "devops-reliability-alb-sg"
   description = "Security group for ALB"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name        = "devops-reliability-alb"
+    Name        = "devops-reliability-alb-sg"
     Project     = "devops-reliability"
     Environment = "dev"
   }
