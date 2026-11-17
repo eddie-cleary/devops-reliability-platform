@@ -15,7 +15,7 @@ Both run as separate containers in one ECS task on an EC2 instance. The infrastr
 
 ## Pipeline
 
-- **Pull request into `main`:** runs the test suite.
+- **Pull request into `main`:** runs Python tests and checks Terraform formatting and configuration validity for both runtime and bootstrap.
 - **Merge to `main`:** runs tests, builds and pushes SHA-tagged images to ECR, then deploys to the `dev` environment. The deploy job registers a new ECS task definition with the new images, updates the service, and waits for it to stabilize.
 - **Automatic rollback:** the ECS service has the deployment circuit breaker enabled. If new tasks keep failing, ECS rolls back to the last good revision.
 - GitHub Actions authenticates to AWS with OIDC, so no long-lived access keys are stored.
@@ -38,3 +38,46 @@ The dev stack is torn down when not in use to lower cost, so it's expected for t
 - GitHub Actions
 - Docker
 - Python (FastAPI, pytest)
+
+## Local setup and tests
+
+Requires Git and Python 3.14. AWS credentials are not required for local testing.
+
+```bash
+git clone https://github.com/eddie-cleary/devops-reliability-platform.git
+cd devops-reliability-platform
+
+python3.14 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install -r requirements-dev.txt
+python -m pip check
+python -m pytest -v tests
+```
+
+The tests cover health classification, SQLite storage, API responses, and the monitor checking a local HTTP service. Two integration tests briefly start local servers on ports 8001 and 8002.
+
+## Run locally
+
+From the repository root, start the API in one terminal:
+
+```bash
+source .venv/bin/activate
+python -m uvicorn service.app:app --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, also from the repository root:
+
+```bash
+source .venv/bin/activate
+
+curl http://127.0.0.1:8000/healthy
+
+python -m monitor.monitor \
+  --url http://127.0.0.1:8000/healthy \
+  --interval 10
+```
+
+The API should return `{"status":"ok"}`. The monitor checks it every ten seconds, prints the health result, and saves check history to a local SQLite file named `checks.db`.
+
+To exercise failure detection, stop the monitor and rerun it with the URL ending in `/error`. The monitor should report `UNHEALTHY`.
