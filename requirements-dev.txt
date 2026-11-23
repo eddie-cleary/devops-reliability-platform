@@ -1,0 +1,5 @@
+-r service/requirements.txt
+-r monitor/requirements.txt
+
+pytest==9.1.1
+httpx2==2.13.1
