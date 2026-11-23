@@ -81,3 +81,7 @@ python -m monitor.monitor \
 The API should return `{"status":"ok"}`. The monitor checks it every ten seconds, prints the health result, and saves check history to a local SQLite file named `checks.db`.
 
 To exercise failure detection, stop the monitor and rerun it with the URL ending in `/error`. The monitor should report `UNHEALTHY`.
+
+## AWS operations
+
+See the [operations runbook](docs/runbook.md) for starting, verifying, testing, troubleshooting, and shutting down the AWS environment.
